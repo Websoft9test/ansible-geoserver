@@ -1,17 +1,17 @@
 # 服务启停
 
-使用由Websoft9提供的 RabbitMQ 部署方案，可能需要用到的服务如下：
+使用由Websoft9提供的 GeoServer 部署方案，可能需要用到的服务如下：
 
-## RabbitMQ
+## GeoServer
 
 ```shell
-sudo systemctl start rabbitmq-server
-sudo systemctl stop rabbitmq-server
-sudo systemctl restart rabbitmq-server
-sudo systemctl status rabbitmq-server
+sudo systemctl start geoserver-server
+sudo systemctl stop geoserver-server
+sudo systemctl restart geoserver-server
+sudo systemctl status geoserver-server
 
-# you can use this debug mode if RabbitMQ service can't run
-rabbitmq-server console
+# you can use this debug mode if GeoServer service can't run
+geoserver-server console
 ```
 
 ### MySQL

@@ -1,0 +1,3 @@
+- name: check_geoserver_service
+  debug:
+    var: check_geoserver_service.stdout

@@ -1,0 +1,63 @@
+# install GeoServer by OS_family
+# installation is same on different OS
+
+- name: Add GeoServer User
+  user:
+    name: geoserver
+    shell: /usr/sbin/nologin
+    home: /usr/share/geoserver
+    create_home: no
+    
+- name: Remove extra dir for re-installation
+  shell: rm -rf /usr/share/geoserver
+  
+- name: Download GeoServer
+  unarchive:
+    src: "{{geoserver_download_url}}"
+    dest: /usr/share/geoserver
+    remote_src: yes
+    owner: geoserver
+    group: geoserver
+
+- name: Install this role on {{ansible_os_family}}
+  include: "{{ansible_os_family}}.yml"
+
+# configure GeoServer
+
+- name: Setting geoserver service
+  copy:
+    src: geoserver.service
+    dest: /lib/systemd/system/geoserver.service
+
+- name: Start and enable geoserver
+  service:
+    name: geoserver.service
+    state: restarted
+    enabled: yes
+     
+- name: Set database connection /opt/geoserver/config/config.json
+  lineinfile:
+    dest: /opt/geoserver/config/config.json
+    regexp: '"DataSource":'
+    line: '    "DataSource": "{{geoserver_db_user}}:{{geoserver_db_password}}@tcp(localhost:3306)/{{geoserver_db_name}}?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s",'
+    backrefs: yes 
+
+# set soft link, -b cover the exist links
+# ln -sb src des
+- name: set soft link
+  shell: |
+    ln -sb /usr/share/geoserver  /data/wwwroot/geoserver
+    ln -sb /usr/share/geoserver/logs  /data/logs/geoserver
+    ln -sb /usr/share/geoserver/etc  /data/config/geoserver
+
+# Check version,
+# must use sudo sh -c to solve the no-root permission
+- block:
+  - name: Check GeoServer Version
+    shell: sudo sh -c 'echo "GeoServer $(cat /usr/share/geoserver/VERSION.txt | sed -n 1p)" 1>> /data/logs/install_version.txt'
+
+# check service state
+- name: Check GeoServer Service
+  shell: systemctl status geoserver | grep Active*
+  register: check_geoserver_service
+  notify: check_geoserver_service

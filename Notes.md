@@ -1,154 +1,144 @@
-# RabbitMQ Notes
+#  GeoServer Notes
 
-组件名称：RabbitMQ-Server  
-安装文档：https://www.rabbitmq.com/download.html  
-配置文档：https://www.rabbitmq.com/admin-guide.html  
-支持平台： Debian家族 | RHEL家族 | Windows | Kubernetes |Docker  
+组件名称：GeoServer 
+安装文档：https://docs.geoserver.org/latest/en/user/installation/linux.html  
+配置文档:  
+支持平台：Debian家族 | RHEL家族 | Windows |macOS   
 
-责任人：helin
+责任人：zxc
 
 ## 概要
-
-RabbitMQ是一款开源的MQ系统，它包含RabbitMQ-Server和RabbitMQ-Client，服务器上运行的是RabbitMQ-Server
+GeoServer是 OpenGIS Web 服务器规范的 J2EE 实现，利用 GeoServer 可以方便的发布地图数据，允许用户对特征数据进行更新、删除、插入操作，通过 GeoServer 可以比较容易的在用户之间迅速共享空间地理信息。
 
 ## 环境要求
 
-* 程序语言：Java 
-* 应用服务器：自带
-* 数据库：无
-* 依赖组件：Erlang
+* 程序语言：  java
+* 应用服务器：
+* 数据库：
+* 依赖组件：Jre 8或Jre 11
 * 其他：
 
 ## 安装说明
 
-官方建议使用其自身提供的erlang和rabbitmq-server的仓库，不建议使用操作系统自带的仓库或其他第三方仓库。同时，官方提供了自动安装仓库的自动化脚本。
+本项目采用源码安装方式,直接从官网下载二进制文件,解压缩包。
 
 下面基于不同的安装平台，分别进行安装说明。
 
-### CentOS
+### CentOS  
 
 ```shell
-# 分别安装erlang源和rabbitmq-server源
-curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | sudo bash
-curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+# 配置java环境(安装jre8或者jre11)
 
-# 安装
-yum install erlang rabbitmq-server -y
+
+#下载二进制文件
+mkdir /usr/share/geoserver 
+
+cd /usr/share/geoserver(官网建议位置)
+
+wget https://nchc.dl.sourceforge.net/project/geoserver/GeoServer/2.17.0/geoserver-2.17.0-bin.zip
+
+#解压缩包
+unzip geoserver-2.17.0-bin.zip
+
+#用户授权
+sudo chown -R USER_NAME /usr/share/geoserver/
+
+#启动geoserver
+systemctl start geoserver
+systemctl enable geoserver
+
 ```
-
-### Ubuntu
+### Ubuntu (与centos相同)
 
 ```shell
-# 分别安装erlang源和rabbitmq-server源
-curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.deb.sh | sudo bash
-curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | sudo bash
 
-# 安装
-sudo apt-get update -y
-apt install erlang rabbitmq-server -y
+
+
+
 ```
 
 ## 路径
 
-* 程序路径：/usr/lib/rabbitmq/lib/rabbitmq_server-*
-* 日志路径：/var/log/rabbitmq  
-* 配置文件路径：  
+* 程序路径：/usr/share/geoserver
+* 日志路径： /usr/share/geoserver/etc/.xml 
+* 配置文件路径：/usr/share/geoserver/logs/keepme.txt
 * 其他...
 
-## 配置
+##配置
 
-安装完成后，需要依次完成如下配置
-
-```shell
-# Set RabbitMQ
-- name: Restart RabbitMQ
-  shell: systemctl start rabbitmq-server
-
-- name: Enable the management console of RabbitMQ
-  shell: rabbitmq-plugins enable rabbitmq_management
-
-- name: Create administrator for RabbitMQ console
-  shell: |
-    rabbitmqctl add_user admin admin
-    rabbitmqctl set_user_tags admin administrator
-```
+无
 
 ## 账号密码
 
+
 ### 数据库密码
 
-如果有数据库
+如果有数据库  
+无
 
-* 数据库安装方式：包管理工具自带 or 自行安装
+* 数据库安装方式：
 * 账号密码：
 
 ### 后台账号
 
 如果有后台账号
-
-* 登录地址
-* 账号密码
-* 密码修改方案：最好是有命令行修改密码的方案
+* 登录地址  http://Your ip:8080/geoserver
+* 账号密码  admin   geoserver
+* 密码修改方案：密码存放在 /root/temp/etc/realm.properties
 
 
 ## 服务
 
-本项目安装后自动生成：rabbitmq-server 服务
+本项目安装后自动生成：
 
-备注：如果开机没有服务，程序无法运行的情况下，需要自行编写服务后存放到项目中
+备注：本项目安装后无服务,需自行编写服务
 
-服务的模板如下：
+服务文件位置：/etc/systemd/system/geoserver.service
 
 ```
 [Unit]
-Description=Redmine
-After=nginx.service
+Description=geoserver
+After=network.target
+
 [Service]
-Environment=RAILS_ENV=production
 Type=simple
-WorkingDirectory=/data/wwwroot/redmine
-ExecStart=/usr/local/bin/puma -b tcp://127.0.0.1:9292 -e production 
-User=redmine
+
+Environment="GEOSERVER_HOME=/usr/share/geoserver"
+ExecStart=/usr/share/geoserver/bin/startup.sh
+ExecStop=/usr/share/geoserver/bin/shutdown.sh
+
 [Install]
 WantedBy=multi-user.target
+                        
+
 ```
 
 ## 环境变量
-
-列出需要增加的环境变量以及增加环境变量的命令：
-
-* 名称 | 路径
+echo  "export GEOSERVER_HOME=/usr/share/geoserver"   >>  ~/.profile
+.  ~/.profile
 
 ## 版本号
 
 通过如下的命令获取主要组件的版本号: 
 
 ```
-# Check RabbitMQ version
-sudo rabbitmqctl status | grep RabbitMQ*
-
-# Check Erlang version
-ls /usr/lib64/erlang
+# Check geoserver version
+ cat  /usr/share/geoserver/VERSION.txt
 ```
 
 ## 常见问题
 
 #### 有没有管理控制台？
 
-*http:// 公网 IP:15672* 即可访问控制台，系统默认存在一个无法通过外网访问的guest/guest账号
+*http://Your ip:8080/geoserver*即可访问控制台
 
 #### 本项目需要开启哪些端口？
-
-| item      | port  |
-| --------- | ----- |
-| lustering | 25672 |
-| AMQP      | 5672  |
-| http      | 15672 |
-
+| item | port |
+| ---- | ---- |
+| java | 8080 |
+| java | 8079 |
 #### 有没有CLI工具？
-
-有，通过 `rabbitmqctl` 查看工具的说明
-
+无
 ## 日志
 
-* 2020-04-14 完成CentOS安装研究
+* 2020-05-15完成CentOS安装研究
