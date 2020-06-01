@@ -1,6 +1,14 @@
 # install GeoServer by OS_family
 # installation is same on different OS
 
+- name: Add directory /usr/share/geoserver
+  file:
+    path: /usr/share/geoserver
+    state: directory
+    owner: geoserver
+    group: geoserver
+    mode: '0750'
+    
 - name: Add GeoServer User
   user:
     name: geoserver
@@ -9,7 +17,7 @@
     create_home: no
     
 - name: Remove extra dir for re-installation
-  shell: rm -rf /usr/share/geoserver
+  shell: rm -rf /usr/share/geoserver/*
   
 - name: Download GeoServer
   unarchive:
@@ -34,13 +42,6 @@
     name: geoserver.service
     state: restarted
     enabled: yes
-     
-- name: Set database connection /opt/geoserver/config/config.json
-  lineinfile:
-    dest: /opt/geoserver/config/config.json
-    regexp: '"DataSource":'
-    line: '    "DataSource": "{{geoserver_db_user}}:{{geoserver_db_password}}@tcp(localhost:3306)/{{geoserver_db_name}}?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s",'
-    backrefs: yes 
 
 # set soft link, -b cover the exist links
 # ln -sb src des
