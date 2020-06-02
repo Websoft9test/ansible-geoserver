@@ -2,7 +2,7 @@
 region: "0"
 
 jdk_version: "11" 
-nginx_reverse_proxy_port: "8080"
+nginx_reverse_proxy_port: "8080/geoserver"
 
 preend_certbot: True
   
